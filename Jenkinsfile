@@ -130,6 +130,12 @@ pipeline {
                 }
             }
         }
+        stage ('Copy Console Log file to file') {
+            steps {
+                sh 'cat ${JENKINS_HOME}/jobs/${JOB_NAME}/builds/${BUILD_NUMBER}/log >> console_log.txt'
+                sh 'tail -n 100 ${JENKINS_HOME}/jobs/${JOB_NAME}/builds/${BUILD_NUMBER}/log > 100_lines_log.txt'
+            }
+        }
     }
 
     post {
@@ -139,3 +145,11 @@ pipeline {
         }
     }
 }
+
+node {
+    stage ('Upload Console Log to Slack') {
+        slackUploadFile filePath: "console_log.txt", initialComment:  "Full log here: "
+        slackUploadFile filePath: "100_lines_log.txt", initialComment:  "Brief log here: "
+    }
+}
+ 
